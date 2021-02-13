@@ -7,18 +7,19 @@
 #define DHTTYPE DHT11
 #define DHTPIN 5
 const int DOOR_SENSOR_PIN = 13;
+int IRSensor = 8;
 int doorState;
-const int trigPin = 9;
-const int echoPin = 10;
-float duration, distance;
+//const int trigPin = 9;
+//const int echoPin = 10;
+//float duration, distance;
 //calling softwareSerial library with parameter of RX and TX
 SoftwareSerial esp8266(RX, TX);
 
 //Define Information for the api and esp8266
-String AP = "MortyMcFly2020";
-String PASS = "Valorant2020!";
-String API = "F1SPFJ9UXAT8I8XA";
-String HOST = "api.thingspeak.com";
+String AP = "MortyMcFly2020"; //Wifi Name
+String PASS = "Valorant2020!"; //Wifi Password
+String API = "F1SPFJ9UXAT8I8XA"; //The user ThingSpeak Channel API
+String HOST = "api.thingspeak.com"; //ThingSpeak API 
 String PORT = "80";
 
 //define other variables
@@ -27,13 +28,13 @@ int countTimeCommand;
 boolean found = false;
 DHT dht(DHTPIN, DHTTYPE);
 
-void setup()
-{
+void setup(){
   Serial.begin(9600);
   esp8266.begin(115200);
   pinMode(DOOR_SENSOR_PIN, INPUT_PULLUP);
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
+  //pinMode(trigPin, OUTPUT);
+  //pinMode(echoPin, INPUT);
+  pinMode(IRSensor, INPUT);
   sendCommand("AT", 5, "OK");
   sendCommand("AT+CWMODE=1", 5, "OK");
   sendCommand("AT+CWJAP=\""+AP+"\",\""+PASS+"\"",20,"OK");
@@ -105,7 +106,7 @@ String getPhotoSens(){
 
 String getDoorSens(){
   doorState = digitalRead(DOOR_SENSOR_PIN);
-  if(doorState == HIGH){
+  if(doorState == 1){
     Serial.println("Door is Open");
   }
   else{
@@ -115,16 +116,12 @@ String getDoorSens(){
 }
 
 String getMotionSen(){
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-
-  duration = pulseIn(echoPin, HIGH);
-  distance = (duration*0.0343)/2;
-  Serial.print("Distance: ");
-  Serial.println(distance);
-  delay(100);
-  return String(distance);
+  int statusSensor = digitalRead(IRSensor);
+  if(statusSensor == 1){
+    Serial.println("Motion Detected");
+  }
+  else{
+    Serial.println("Motion not Detected");
+  }
+  return String(statusSensor);
 }
